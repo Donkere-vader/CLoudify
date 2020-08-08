@@ -18,9 +18,7 @@ class Console:
         self.output()
 
     def clear_screen(self):
-        pltfrm = platform.platform()
-
-        if 'windows' in pltfrm.lower():
+        if platform.system() == 'Windows':
             os.system('cls')
         else:
             os.system('clear')

@@ -47,7 +47,7 @@ class Server:
             try:
                 data = user.connection.recv(1024)
             except (ConnectionResetError, ConnectionAbortedError):
-                self.console.log(f"Lost connection with {user}")
+                self.console.log(f"Lost connection with {user}", negative=True)
                 self.users.remove(user)
                 return
 
@@ -76,12 +76,22 @@ class Server:
                 full_data = b""
 
     def handle_data(self, data, user):
+        _tries = 0
         while True:
+            _tries += 1
             try:
                 data = pickle.loads(data)
                 break
             except pickle.UnpicklingError as e:
-                self.logger.log(f"Pickle loads error {e}  |  Retrying..", type="min")
+                if _tries == 10:
+                    self.console.log(f"Failed to load data Error: {e}", negative=True)
+                    return
+                self.console.log(f"Error {e} while loading data.. trying again ", negative=True)
+
+        # check for data type
+        if data.type == 'file_req':
+            # file request
+            pass
 
 def main():
     server = Server()

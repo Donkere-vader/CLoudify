@@ -3,3 +3,4 @@ __pycache__/
 .vscode/
 *.log
 CLoudify/server/files
+CLoudify/client/sync_folder
