@@ -1,2 +1,5 @@
 __pycache__/
-*.sqlite
+*.db
+.vscode/
+*.log
+CLoudify/server/files
