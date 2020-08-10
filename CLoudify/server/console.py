@@ -2,7 +2,8 @@ import os
 import platform
 from datetime import datetime
 
-LOGO = """\033[31m ██████╗██╗      ██████╗ ██╗   ██╗██████╗ ██╗███████╗██╗   ██╗
+LOGO = """
+\033[31m ██████╗██╗      ██████╗ ██╗   ██╗██████╗ ██╗███████╗██╗   ██╗
 ██╔════╝██║     ██╔═══██╗██║   ██║██╔══██╗██║██╔════╝╚██╗ ██╔╝
 ██║     ██║     ██║   ██║██║   ██║██║  ██║██║█████╗   ╚████╔╝
 ██║     ██║     ██║   ██║██║   ██║██║  ██║██║██╔══╝    ╚██╔
@@ -30,7 +31,7 @@ class Console:
         self.clear_screen()
         self.logo()
         print()
-        for item in self.log_track[-5:]:
+        for item in self.log_track[-20:]:
             print(item)
 
     def log(self, log_item, negative=False):

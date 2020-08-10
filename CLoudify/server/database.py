@@ -14,6 +14,7 @@ class User(BaseModel):
     username = CharField(unique=True)
     password = CharField()
     salt = CharField()
+    authkey = CharField()
 
 
 class File(BaseModel):
@@ -21,12 +22,13 @@ class File(BaseModel):
     name = CharField()  # path/name.extension
     modified = DateTimeField()
     hash = CharField()
+    user = ForeignKeyField(User, backref='files')
 
 
 class UserHasFiles(BaseModel):
     """ UserHasFiles table | Used to keep track of what version each user has """
     file = ForeignKeyField(File, backref='users')
-    user = ForeignKeyField(User, backref='files')
+    user = ForeignKeyField(User, backref='device_files')
 
 
 class Tables:

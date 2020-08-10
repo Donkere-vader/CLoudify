@@ -1,6 +1,7 @@
 from database import db, Tables
 from config import IP, PORT, HEADERSIZE
-from user import User
+from connection import Connection
+from sendobject import sendObject
 import pickle
 import console
 import threading
@@ -10,7 +11,7 @@ import socket
 class Server:
     def __init__(self):
         self.console = console.Console()
-        self.users = []
+        self.connections = []
         self.threads = []
 
     def handle_connections(self):
@@ -29,26 +30,26 @@ class Server:
 
         while True:
             connection, address = self.sock.accept()
-            new_user = User(connection, address)
-            self.user.append(new_user)
-            self.console.log(f"New connection with {new_user}")
+            new_connection = Connection(connection, address)
+            self.connections.append(new_connection)
+            self.console.log(f"New connection with {new_connection}")
 
             # start a thread for this user
-            new_thread = threading.Thread(target=self.user_connection, args=(new_user, ))
+            new_thread = threading.Thread(target=self.user_connection, args=(new_connection, ))
             self.threads.append(new_thread)
             new_thread.daemon = True
             new_thread.start()
 
-    def user_connection(self, user):
+    def user_connection(self, connection):
         new_data = True
         new = b""
 
         while True:
             try:
-                data = user.connection.recv(1024)
+                data = connection.connection.recv(1024)
             except (ConnectionResetError, ConnectionAbortedError):
-                self.console.log(f"Lost connection with {user}", negative=True)
-                self.users.remove(user)
+                self.console.log(f"Lost connection with {connection}", negative=True)
+                self.connections.remove(connection)
                 return
 
             if data == b"":
@@ -72,10 +73,10 @@ class Server:
                 new = full_data[data_len:]
                 full_data = full_data[:data_len]
 
-                self.handle_data(full_data, user)
+                self.handle_data(full_data, connection)
                 full_data = b""
 
-    def handle_data(self, data, user):
+    def handle_data(self, data, connection):
         _tries = 0
         while True:
             _tries += 1
@@ -92,7 +93,33 @@ class Server:
         if data.type == 'file_req':
             # file request
             pass
+        elif data.type == 'error':
+            self.console.log(data.error, negative=True)
+        elif data.type == 'login':  # user tries to log in
+            self.console.log(f"Login attempt from {connection}")
+            user = Tables.User.select(username=data.username)
+
+            console.log(f"user: {user}")
+
+            if not user:
+                self.send("authfail", connection)
+
+    def send(self, _type, connection, **kwargs):
+        data = sendObject(
+            _type,
+            **kwargs
+        )
+
+        bData = pickle.dumps(data)
+
+        header = bytes(str(len(bData)).ljust(HEADERSIZE), "utf-8")
+        full_bData = header + bData
+
+        self.connection.send(full_bData)
 
 def main():
     server = Server()
     server.start()
+
+if __name__ == "__main__":
+    main()
